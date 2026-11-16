@@ -48,6 +48,7 @@ chrono = { workspace = true }
 lazy_static = { workspace = true }
 once_cell = { workspace = true }
 serde = { workspace = true, features = ["serde_derive"] }
+documented = { workspace = true }
 futures = { workspace = true }
 futures-util = { workspace = true }
 metrics = { workspace = true }

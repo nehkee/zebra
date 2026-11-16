@@ -261,7 +261,7 @@ const REGTEST_SYNC_RESTART_DELAY: Duration = Duration::from_secs(2);
 const GENESIS_TIMEOUT_RETRY: Duration = Duration::from_secs(10);
 
 /// Sync configuration section.
-#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize, documented::DocumentedFields)]
 #[serde(deny_unknown_fields, default)]
 pub struct Config {
     /// The number of parallel block download requests.

@@ -31,7 +31,9 @@ pub(crate) const MAX_USER_COINBASE_DATA_LEN: usize =
 
 /// Mining configuration section.
 #[serde_as]
-#[derive(Clone, Debug, Default, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(
+    Clone, Debug, Default, Eq, PartialEq, Deserialize, Serialize, documented::DocumentedFields,
+)]
 #[serde(deny_unknown_fields, default)]
 pub struct Config {
     /// Address for receiving miner subsidy and tx fees.

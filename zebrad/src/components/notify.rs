@@ -22,7 +22,9 @@ mod tests;
 /// Block notify configuration section.
 ///
 /// Mirrors zcashd's `-blocknotify` option.
-#[derive(Clone, Debug, Eq, PartialEq, serde::Deserialize, serde::Serialize)]
+#[derive(
+    Clone, Debug, Eq, PartialEq, serde::Deserialize, serde::Serialize, documented::DocumentedFields,
+)]
 #[serde(deny_unknown_fields, default)]
 pub struct Config {
     /// Command run whenever the best chain tip changes, mirroring zcashd's `-blocknotify`.

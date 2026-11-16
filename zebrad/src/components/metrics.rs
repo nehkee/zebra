@@ -136,7 +136,7 @@ where
 }
 
 /// Metrics configuration section.
-#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize, documented::DocumentedFields)]
 #[serde(deny_unknown_fields, default)]
 pub struct Config {
     /// The address used for the Prometheus metrics endpoint.

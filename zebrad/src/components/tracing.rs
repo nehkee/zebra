@@ -74,7 +74,7 @@ impl From<Config> for InnerConfig {
 }
 
 /// Tracing configuration section: inner config used to deserialize and apply cross-field defaults.
-#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize, documented::DocumentedFields)]
 #[serde(deny_unknown_fields, default)]
 pub struct InnerConfig {
     /// Whether to use colored terminal output, if available.

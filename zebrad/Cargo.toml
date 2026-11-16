@@ -175,6 +175,7 @@ indexmap = { workspace = true }
 lazy_static = { workspace = true }
 semver = { workspace = true }
 serde = { workspace = true, features = ["serde_derive"] }
+documented = { workspace = true }
 toml = { workspace = true }
 
 futures = { workspace = true }

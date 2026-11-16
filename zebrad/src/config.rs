@@ -49,7 +49,9 @@ fn is_sensitive_leaf_key(leaf_key: &str) -> bool {
 /// | Linux    | `$XDG_CONFIG_HOME` or `$HOME/.config` | `/home/alice/.config/zebrad.toml`              |
 /// | macOS    | `$HOME/Library/Preferences`           | `/Users/Alice/Library/Preferences/zebrad.toml` |
 /// | Windows  | `{FOLDERID_RoamingAppData}`           | `C:\Users\Alice\AppData\Local\zebrad.toml`     |
-#[derive(Clone, Default, Debug, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(
+    Clone, Default, Debug, Eq, PartialEq, Deserialize, Serialize, documented::DocumentedFields,
+)]
 #[serde(deny_unknown_fields, default)]
 pub struct ZebradConfig {
     /// Consensus configuration

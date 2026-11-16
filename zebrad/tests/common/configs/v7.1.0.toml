@@ -1,0 +1,826 @@
+# Default configuration for zebrad.
+#
+# This file can be used as a skeleton for custom configs.
+#
+# Unspecified fields use default values. Optional fields are Some(field) if the
+# field is present and None if it is absent.
+#
+# This file is generated as an example using zebrad's current defaults.
+# You should set only the config options you want to keep, and delete the rest.
+# Optional fields whose default is None are commented out, with an example value.
+# To use one of them, uncomment it and change the value.
+#
+# The config format (including a complete list of sections and fields) is
+# documented here:
+# https://docs.rs/zebrad/latest/zebrad/config/struct.ZebradConfig.html
+#
+# CONFIGURATION SOURCES (in order of precedence, highest to lowest):
+#
+# 1. Environment variables with ZEBRA_ prefix (highest precedence)
+#    - Format: ZEBRA_SECTION__KEY (double underscore for nested keys)
+#    - Examples:
+#      - ZEBRA_NETWORK__NETWORK=Testnet
+#      - ZEBRA_RPC__LISTEN_ADDR=127.0.0.1:8232
+#      - ZEBRA_STATE__CACHE_DIR=/path/to/cache
+#      - ZEBRA_TRACING__FILTER=debug
+#      - ZEBRA_METRICS__ENDPOINT_ADDR=0.0.0.0:9999
+#
+# 2. Configuration file (TOML format)
+#    - At the path specified via -c flag, e.g. `zebrad -c myconfig.toml start`, or
+#    - At the default path in the user's preference directory (platform-dependent, see below)
+#
+# 3. Hard-coded defaults (lowest precedence)
+#
+# The user's preference directory and the default path to the `zebrad` config are platform dependent,
+# based on `dirs::preference_dir`, see https://docs.rs/dirs/latest/dirs/fn.preference_dir.html :
+#
+# | Platform | Value                                 | Example                                        |
+# | -------- | ------------------------------------- | ---------------------------------------------- |
+# | Linux    | `$XDG_CONFIG_HOME` or `$HOME/.config` | `/home/alice/.config/zebrad.toml`              |
+# | macOS    | `$HOME/Library/Preferences`           | `/Users/Alice/Library/Preferences/zebrad.toml` |
+# | Windows  | `{FOLDERID_RoamingAppData}`           | `C:\Users\Alice\AppData\Local\zebrad.toml`     |
+
+# Consensus configuration
+[consensus]
+
+# Should Zebra make sure that it follows the consensus chain while syncing?
+# This is a developer-only option.
+#
+# # Security
+#
+# Disabling this option leaves your node vulnerable to some kinds of chain-based attacks.
+# Zebra regularly updates its checkpoints to ensure nodes are following the best chain.
+#
+# # Details
+#
+# This option is `true` by default, because it prevents some kinds of chain attacks.
+#
+# Disabling this option makes Zebra start full validation earlier.
+# It is slower and less secure.
+#
+# Zebra requires some checkpoints to simplify validation of legacy network upgrades.
+# Required checkpoints are always active, even when this option is `false`.
+#
+# # Deprecation
+#
+# For security reasons, this option might be deprecated or ignored in a future Zebra
+# release.
+checkpoint_sync = true
+
+# Metrics configuration
+[metrics]
+
+# The address used for the Prometheus metrics endpoint.
+#
+# Install Zebra using `cargo install --features=prometheus` to enable this config.
+#
+# The endpoint is disabled if this is set to `None`.
+# endpoint_addr = '127.0.0.1:9999'
+
+# Networking configuration
+[network]
+
+# The address on which this node should listen for connections.
+#
+# Can be `address:port` or just `address`. If there is no configured
+# port, Zebra will use the default port for the configured `network`.
+#
+# `address` can be an IP address or a DNS name. DNS names are
+# only resolved once, when Zebra starts up.
+#
+# By default, Zebra listens on `[::]` (all IPv6 and IPv4 addresses).
+# This enables dual-stack support, accepting both IPv4 and IPv6 connections.
+#
+# If a specific listener address is configured, Zebra will advertise
+# it to other nodes. But by default, Zebra uses an unspecified address
+# ("\[::\]:port"), which is not advertised to other nodes.
+#
+# Zebra does not currently support:
+# - [Advertising a different external IP address #1890](https://github.com/ZcashFoundation/zebra/issues/1890), or
+# - [Auto-discovering its own external IP address #1893](https://github.com/ZcashFoundation/zebra/issues/1893).
+#
+# However, other Zebra instances compensate for unspecified or incorrect
+# listener addresses by adding the external IP addresses of peers to
+# their address books.
+listen_addr = "[::]:8233"
+
+# The external address of this node if any.
+#
+# Zebra bind to `listen_addr` but this can be an internal address if the node
+# is behind a firewall, load balancer or NAT. This field can be used to
+# advertise a different address to peers making it possible to receive inbound
+# connections and contribute to the P2P network from behind a firewall, load balancer, or NAT.
+# external_addr = '203.0.113.1:8233'
+
+# The network to connect to.
+network = "Mainnet"
+
+# A list of initial peers for the peerset when operating on
+# mainnet.
+initial_mainnet_peers = [
+    "dnsseed.str4d.xyz:8233",
+    "dnsseed.z.cash:8233",
+    "mainnet.seeder.shieldedinfra.net:8233",
+    "mainnet.seeder.zfnd.org:8233",
+    "seeder.zec.rocks:8233",
+]
+
+# A list of initial peers for the peerset when operating on
+# testnet.
+initial_testnet_peers = [
+    "dnsseed.testnet.z.cash:18233",
+    "seeder.testnet.zec.rocks:18233",
+    "testnet.seeder.zfnd.org:18233",
+]
+
+# An optional root directory for storing cached peer address data.
+#
+# # Configuration
+#
+# Set to:
+# - `true` to read and write peer addresses to disk using the default cache path,
+# - `false` to disable reading and writing peer addresses to disk,
+# - `'/custom/cache/directory'` to read and write peer addresses to a custom directory.
+#
+# By default, all Zebra instances run by the same user will share a single peer cache.
+# If you use a custom cache path, you might also want to change `state.cache_dir`.
+#
+# # Functionality
+#
+# The peer cache is a list of the addresses of some recently useful peers.
+#
+# For privacy reasons, the cache does *not* include any other information about peers,
+# such as when they were connected to the node.
+#
+# Deleting or modifying the peer cache can impact your node's:
+# - reliability: if DNS or the Zcash DNS seeders are unavailable or broken
+# - security: if DNS is compromised with malicious peers
+#
+# If you delete it, Zebra will replace it with a fresh set of peers from the DNS seeders.
+#
+# # Defaults
+#
+# The default directory is platform dependent, based on
+# [`dirs::cache_dir()`](https://docs.rs/dirs/3.0.1/dirs/fn.cache_dir.html):
+#
+# |Platform | Value                                           | Example                              |
+# | ------- | ----------------------------------------------- | ------------------------------------ |
+# | Linux   | `$XDG_CACHE_HOME/zebra` or `$HOME/.cache/zebra` | `/home/alice/.cache/zebra`           |
+# | macOS   | `$HOME/Library/Caches/zebra`                    | `/Users/Alice/Library/Caches/zebra`  |
+# | Windows | `{FOLDERID_LocalAppData}\zebra`                 | `C:\Users\Alice\AppData\Local\zebra` |
+# | Other   | `std::env::current_dir()/cache/zebra`           | `/cache/zebra`                       |
+#
+# # Security
+#
+# If you are running Zebra with elevated permissions ("root"), create the
+# directory for this file before running Zebra, and make sure the Zebra user
+# account has exclusive access to that directory, and other users can't modify
+# its parent directories.
+#
+# # Implementation Details
+#
+# Each network has a separate peer list, which is updated regularly from the current
+# address book. These lists are stored in `network/mainnet.peers` and
+# `network/testnet.peers` files, underneath the `cache_dir` path.
+#
+# Previous peer lists are automatically loaded at startup, and used to populate the
+# initial peer set and address book.
+cache_dir = true
+
+# The initial target size for the peer set.
+#
+# Also used to limit the number of inbound and outbound connections made by Zebra,
+# and the size of the cached peer list.
+#
+# If you have a slow network connection, and Zebra is having trouble
+# syncing, try reducing the peer set size. You can also reduce the peer
+# set size to reduce Zebra's bandwidth usage.
+peerset_initial_target_size = 25
+
+# How frequently we attempt to crawl the network to discover new peer
+# addresses.
+#
+# Zebra asks its connected peers for more peer addresses:
+# - regularly, every time `crawl_new_peer_interval` elapses, and
+# - if the peer set is busy, and there aren't any peer addresses for the
+# next connection attempt.
+crawl_new_peer_interval = "1m 1s"
+
+# The maximum number of peer connections Zebra will keep for a given IP address
+# before it drops any additional peer connections with that IP.
+#
+# IPv6 connections are grouped by `/64` prefix, so the limit applies per
+# `/64` subnet rather than per individual address. IPv4 connections are
+# limited per address.
+#
+# The default and minimum value are 1.
+#
+# # Security
+#
+# Increasing this config above 1 reduces Zebra's network security.
+#
+# If this config is greater than 1, Zebra can initiate multiple outbound handshakes to the same
+# IP address.
+#
+# Inbound connection attempts sharing a connection limit key are also rate-limited
+# by this config within a short time window.
+#
+# If Zebra makes multiple inbound or outbound connections to the same IP, they will be dropped
+# after the handshake, but before adding them to the peer set. The total numbers of inbound and
+# outbound connections are also limited to a multiple of `peerset_initial_target_size`.
+max_connections_per_ip = 1
+
+# State configuration
+[state]
+
+# The root directory for storing cached block data.
+#
+# If you change this directory, you might also want to change `network.cache_dir`.
+#
+# This cache stores permanent blockchain state that can be replicated from
+# the network, including the best chain, blocks, the UTXO set, and other indexes.
+# Any state that can be rolled back is only stored in memory.
+#
+# The `zebra-state` cache does *not* include any private data, such as wallet data.
+#
+# You can delete the entire cached state directory, but it will impact your node's
+# readiness and network usage. If you do, Zebra will re-sync from genesis the next
+# time it is launched.
+#
+# The default directory is platform dependent, based on
+# [`dirs::cache_dir()`](https://docs.rs/dirs/3.0.1/dirs/fn.cache_dir.html):
+#
+# |Platform | Value                                           | Example                              |
+# | ------- | ----------------------------------------------- | ------------------------------------ |
+# | Linux   | `$XDG_CACHE_HOME/zebra` or `$HOME/.cache/zebra` | `/home/alice/.cache/zebra`           |
+# | macOS   | `$HOME/Library/Caches/zebra`                    | `/Users/Alice/Library/Caches/zebra`  |
+# | Windows | `{FOLDERID_LocalAppData}\zebra`                 | `C:\Users\Alice\AppData\Local\zebra` |
+# | Other   | `std::env::current_dir()/cache/zebra`           | `/cache/zebra`                       |
+#
+# # Security
+#
+# If you are running Zebra with elevated permissions ("root"), create the
+# directory for this file before running Zebra, and make sure the Zebra user
+# account has exclusive access to that directory, and other users can't modify
+# its parent directories.
+#
+# # Implementation Details
+#
+# Each state format version and network has a separate state.
+# These states are stored in `state/vN/mainnet` and `state/vN/testnet` subdirectories,
+# underneath the `cache_dir` path, where `N` is the state format version.
+#
+# When Zebra's state format changes, it creates a new state subdirectory for that version,
+# and re-syncs from genesis.
+#
+# Old state versions are automatically deleted at startup. You can also manually delete old
+# state versions.
+cache_dir = "cache_dir"
+
+# Whether to use an ephemeral database.
+#
+# Ephemeral databases are stored in a temporary directory created using [`tempfile::tempdir()`].
+# They are deleted when Zebra exits successfully.
+# (If Zebra panics or crashes, the ephemeral database won't be deleted.)
+#
+# Set to `false` by default. If this is set to `true`, [`cache_dir`] is ignored.
+#
+# Ephemeral directories are created in the [`std::env::temp_dir()`].
+# Zebra names each directory after the state version and network, for example: `zebra-state-v21-mainnet-XnyGnE`.
+#
+# [`cache_dir`]: struct.Config.html#structfield.cache_dir
+ephemeral = false
+
+# Whether to cache non-finalized blocks on disk to be restored when Zebra restarts.
+#
+# Set to `true` by default. If this is set to `false`, Zebra will irrecoverably drop
+# non-finalized blocks when the process exits and will have to re-download them from
+# the network when it restarts, if those blocks are still available in the network.
+#
+# Note: The non-finalized state will be written to a backup cache once per 5 seconds at most.
+# If blocks are added to the non-finalized state more frequently, the backup may not reflect
+# Zebra's last non-finalized state before it shut down.
+should_backup_non_finalized_state = true
+
+# Whether to delete the old database directories when present.
+#
+# Set to `true` by default. If this is set to `false`,
+# no check for old database versions will be made and nothing will be
+# deleted.
+delete_old_database = true
+
+# Commit blocks to the finalized state up to this height, then exit Zebra.
+#
+# Set to `None` by default: Zebra continues syncing indefinitely.
+# debug_stop_at_height = 3000000
+
+# While Zebra is running, check state validity this often.
+#
+# Set to `None` by default: Zebra only checks state format validity on startup and shutdown.
+# debug_validity_check_interval = '1h'
+
+# If true, skip spawning the non-finalized state backup task and instead write
+# the non-finalized state to the backup directory synchronously before each update
+# to the latest chain tip or non-finalized state channels.
+#
+# Set to `false` by default. When `true`, the non-finalized state is still restored
+# from the backup directory on startup, but updates are written synchronously on every
+# block commit rather than asynchronously every 5 seconds.
+#
+# This is intended for testing scenarios where blocks are committed rapidly and the
+# async backup task may not flush all blocks before shutdown.
+debug_skip_non_finalized_state_backup_task = false
+
+# Tracing configuration
+[tracing]
+
+# Whether to use colored terminal output, if available.
+#
+# Colored terminal output is automatically disabled if an output stream
+# is connected to a file. (Or another non-terminal device.)
+#
+# Defaults to `true`, which automatically enables colored output to
+# terminals.
+use_color = true
+
+# Whether to force the use of colored terminal output, even if it's not available.
+#
+# Will force Zebra to use colored terminal output even if it does not detect that the output
+# is a terminal that supports colors.
+#
+# Defaults to `false`, which keeps the behavior of `use_color`.
+force_use_color = false
+
+# The filter used for tracing events.
+#
+# The filter is used to create a `tracing-subscriber`
+# [`EnvFilter`](https://docs.rs/tracing-subscriber/0.2.10/tracing_subscriber/filter/struct.EnvFilter.html#directives),
+# and more details on the syntax can be found there or in the examples
+# below.
+#
+# If no filter is specified (`None`), the filter is set to `info` if the
+# `-v` flag is given and `warn` if it is not given.
+#
+# # Examples
+#
+# `warn,zebrad=info,zebra_network=debug` sets a global `warn` level, an
+# `info` level for the `zebrad` crate, and a `debug` level for the
+# `zebra_network` crate.
+#
+# ```ascii,no_run
+# [block_verify{height=Some\(block::Height\(.*000\)\)}]=trace
+# ```
+# sets `trace` level for all events occurring in the context of a
+# `block_verify` span whose `height` field ends in `000`, i.e., traces the
+# verification of every 1000th block.
+# filter = 'info'
+
+# The buffer_limit size sets the number of log lines that can be queued by the tracing subscriber
+# to be written to stdout before logs are dropped.
+#
+# Defaults to 128,000 with a minimum of 100.
+buffer_limit = 128000
+
+# The address used for an ad-hoc RPC endpoint allowing dynamic control of the tracing filter.
+#
+# Install Zebra using `cargo install --features=filter-reload` to enable this config.
+#
+# If this is set to None, the endpoint is disabled.
+# endpoint_addr = '127.0.0.1:3000'
+
+# Controls whether to write a flamegraph of tracing spans.
+#
+# Install Zebra using `cargo install --features=flamegraph` to enable this config.
+#
+# If this is set to None, flamegraphs are disabled. Otherwise, it specifies
+# an output file path, as described below.
+#
+# This path is not used verbatim when writing out the flamegraph. This is
+# because the flamegraph is written out as two parts. First the flamegraph
+# is constantly persisted to the disk in a "folded" representation that
+# records collapsed stack traces of the tracing spans that are active.
+# Then, when the application is finished running the destructor will flush
+# the flamegraph output to the folded file and then read that file and
+# generate the final flamegraph from it as an SVG.
+#
+# The need to create two files means that we will slightly manipulate the
+# path given to us to create the two representations.
+#
+# # Security
+#
+# If you are running Zebra with elevated permissions ("root"), create the
+# directory for this file before running Zebra, and make sure the Zebra user
+# account has exclusive access to that directory, and other users can't modify
+# its parent directories.
+#
+# # Example
+#
+# Given `flamegraph = "flamegraph"` we will generate a `flamegraph.svg` and
+# a `flamegraph.folded` file in the current directory.
+#
+# If you provide a path with an extension the extension will be ignored and
+# replaced with `.folded` and `.svg` for the respective files.
+# flamegraph = 'flamegraph'
+
+# Shows progress bars for block syncing, and mempool transactions, and peer networking.
+# Also sends logs to the default log file path.
+#
+# This config field is ignored unless the `progress-bar` feature is enabled.
+# progress_bar = 'summary'
+
+# If set to a path, write the tracing logs to that path.
+#
+# By default, logs are sent to the terminal standard output.
+# But if the `progress_bar` config is activated, logs are sent to the standard log file path:
+# - Linux: `$XDG_STATE_HOME/zebrad.log` or `$HOME/.local/state/zebrad.log`
+# - macOS: `$HOME/Library/Application Support/zebrad.log`
+# - Windows: `%LOCALAPPDATA%\zebrad.log` or `C:\Users\%USERNAME%\AppData\Local\zebrad.log`
+#
+# # Security
+#
+# If you are running Zebra with elevated permissions ("root"), create the
+# directory for this file before running Zebra, and make sure the Zebra user
+# account has exclusive access to that directory, and other users can't modify
+# its parent directories.
+# log_file = '/var/log/zebrad.log'
+
+# The use_journald flag sends tracing events to systemd-journald, on Linux
+# distributions that use systemd.
+#
+# Install Zebra using `cargo install --features=journald` to enable this config.
+use_journald = false
+
+# OpenTelemetry OTLP endpoint URL for distributed tracing.
+#
+# Install Zebra using `cargo install --features=opentelemetry` to enable this config.
+#
+# When `None` (default), OpenTelemetry is completely disabled with zero runtime overhead.
+# When set, traces are exported via OTLP HTTP protocol.
+#
+# Example: `"http://localhost:4318"`
+#
+# Can also be set via `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable (lower precedence).
+# opentelemetry_endpoint = 'http://localhost:4318'
+
+# Service name reported to OpenTelemetry collector.
+#
+# Defaults to `"zebra"` if not specified.
+#
+# Can also be set via `OTEL_SERVICE_NAME` environment variable.
+# opentelemetry_service_name = 'zebrad'
+
+# Trace sampling percentage between 0 and 100.
+#
+# Controls what percentage of traces are exported:
+# - `100` = 100% (all traces, default)
+# - `10` = 10% (recommended for high-traffic production)
+# - `0` = 0% (effectively disabled)
+#
+# Lower values reduce network/collector overhead for busy nodes.
+#
+# Note: This differs from the standard `OTEL_TRACES_SAMPLER_ARG` which uses
+# a ratio (0.0-1.0). Zebra uses percentage (0-100) for consistency with
+# other integer-based configuration options.
+# opentelemetry_sample_percent = 10
+
+# Sync configuration
+[sync]
+
+# The number of parallel block download requests.
+#
+# This is set to a low value by default, to avoid task and
+# network contention. Increasing this value may improve
+# performance on machines with a fast network connection.
+download_concurrency_limit = 50
+
+# The number of blocks submitted in parallel to the checkpoint verifier.
+#
+# Increasing this limit increases the buffer size, so it reduces
+# the impact of an individual block request failing. However, it
+# also increases memory and CPU usage if block validation stalls,
+# or there are some large blocks in the pipeline.
+#
+# The block size limit is 2MB, so in theory, this could represent multiple
+# gigabytes of data, if we downloaded arbitrary blocks. However,
+# because we randomly load balance outbound requests, and separate
+# block download from obtaining block hashes, an adversary would
+# have to control a significant fraction of our peers to lead us
+# astray.
+#
+# For reliable checkpoint syncing, Zebra enforces a
+# [`MIN_CHECKPOINT_CONCURRENCY_LIMIT`].
+#
+# This is set to a high value by default, to avoid verification pipeline stalls.
+# Decreasing this value reduces RAM usage.
+checkpoint_verify_concurrency_limit = 1000
+
+# The number of blocks submitted in parallel to the full verifier.
+#
+# This is set to a low value by default, to avoid verification timeouts on large blocks.
+# Increasing this value may improve performance on machines with many cores.
+full_verify_concurrency_limit = 20
+
+# The number of threads used to verify signatures, proofs, and other CPU-intensive code.
+#
+# If the number of threads is not configured or zero, Zebra uses the number of logical cores.
+# If the number of logical cores can't be detected, Zebra uses one thread.
+# For details, see [the `rayon` documentation](https://docs.rs/rayon/latest/rayon/struct.ThreadPoolBuilder.html#method.num_threads).
+parallel_cpu_threads = 0
+
+# Mempool configuration
+[mempool]
+
+# The mempool transaction cost limit.
+#
+# This limits the total serialized byte size of all transactions in the mempool.
+#
+# Consensus rule:
+# > There MUST be a configuration option mempooltxcostlimit, which SHOULD default to 80000000.
+#
+# This corresponds to `mempooltxcostlimit` from [ZIP-401](https://zips.z.cash/zip-0401#specification).
+tx_cost_limit = 80000000
+
+# The mempool transaction eviction age limit.
+#
+# This limits the maximum amount of time evicted transaction IDs stay in
+# the mempool rejection list. Transactions are randomly evicted from the
+# mempool when the mempool reaches [`Self::tx_cost_limit`].
+#
+# (Transactions can also be rejected by the mempool for other reasons.
+# Different rejection reasons can have different age limits.)
+#
+# This corresponds to `mempoolevictionmemoryminutes` from
+# [ZIP-401](https://zips.z.cash/zip-0401#specification).
+eviction_memory_time = "1h"
+
+# If the state's best chain tip has reached this height, always enable the mempool,
+# regardless of Zebra's sync status.
+#
+# Set to `None` by default: Zebra always checks the sync status before enabling the mempool.
+# debug_enable_at_height = 0
+
+# Maximum size in bytes of an OP_RETURN script that is considered standard.
+#
+# If unset, defaults to [`DEFAULT_MAX_DATACARRIER_BYTES`]. This size includes the OP_RETURN
+# opcode and pushdata overhead. Matches zcashd's `-datacarriersize` default behavior.
+max_datacarrier_bytes = 83
+
+# Block notify configuration
+[notify]
+
+# Command run whenever the best chain tip changes, mirroring zcashd's `-blocknotify`.
+#
+# Every `%s` in the command is replaced with the new tip's block hash in `getbestblockhash`
+# hex format. The command is run via the system shell (`/bin/sh -c` on Unix, `cmd /C` on
+# Windows), detached, and never blocks block validation. It is not run during initial block
+# download (gated on [`SyncStatus::wait_until_close_to_tip`]).
+#
+# Best-effort per tip change: during fast sync or reorgs, intermediate tip hashes may be
+# coalesced and skipped — only the current best tip hash fires. Disabled when `None`.
+# block_notify_command = 'echo %s'
+
+# RPC configuration
+[rpc]
+
+# IP address and port for the RPC server.
+#
+# Note: The RPC server is disabled by default.
+# To enable the RPC server, set a listen address in the config:
+# ```toml
+# [rpc]
+# listen_addr = '127.0.0.1:8232'
+# ```
+#
+# The recommended ports for the RPC server are:
+# - Mainnet: 127.0.0.1:8232
+# - Testnet: 127.0.0.1:18232
+#
+# # Security
+#
+# If you bind Zebra's RPC port to a public IP address,
+# anyone on the internet can send transactions via your node.
+# They can also query your node's state.
+# listen_addr = '127.0.0.1:8232'
+
+# IP address and port for the indexer RPC server.
+#
+# Note: The indexer RPC server is disabled by default.
+# To enable the indexer RPC server, compile `zebrad` with the
+# `indexer` feature flag and set a listen address in the config:
+# ```toml
+# [rpc]
+# indexer_listen_addr = '127.0.0.1:8230'
+# ```
+#
+# # Security
+#
+# If you bind Zebra's indexer RPC port to a public IP address,
+# anyone on the internet can query your node's state.
+# indexer_listen_addr = '127.0.0.1:8230'
+
+# IP address and port for the lightwalletd-compatible gRPC server.
+#
+# Note: The lightwalletd gRPC server is disabled by default.
+# To enable it, set a listen address in the config:
+# ```toml
+# [rpc]
+# lightwalletd_listen_addr = '127.0.0.1:9067'
+# ```
+#
+# This server implements the lightwalletd `CompactTxStreamer` service, so
+# Zcash light clients can connect directly to Zebra.
+#
+# This server is experimental: its behaviour and configuration may change
+# in any release, including in ways that break clients.
+#
+# # Security
+#
+# The port serves plaintext HTTP/2, with no TLS and no authentication —
+# cookie authentication does not apply to it. Anyone who can reach the
+# port can query your node's state and send transactions through it, and
+# anyone on the network path can read and modify the traffic, including
+# the addresses a light client is querying. Terminate TLS in a reverse
+# proxy, and bind Zebra to a loopback or private address.
+#
+# Run this on infrastructure you operate, not on end users' machines: a
+# loopback port is reachable by any local process, and by web pages
+# loaded in a browser on that machine.
+# lightwalletd_listen_addr = '127.0.0.1:9067'
+
+# The number of threads used to process RPC requests and responses.
+#
+# This field is deprecated and could be removed in a future release.
+# We keep it just for backward compatibility but it actually do nothing.
+# It was something configurable when the RPC server was based in the jsonrpc-core crate,
+# not anymore since we migrated to jsonrpsee.
+parallel_cpu_threads = 0
+
+# Test-only option that makes Zebra say it is at the chain tip,
+# no matter what the estimated height or local clock is.
+debug_force_finished_sync = false
+
+# The directory where Zebra stores RPC cookies.
+cookie_dir = "/root/.cache/zebra"
+
+# Enable cookie-based authentication for RPCs.
+enable_cookie_auth = true
+
+# The maximum size of the response body in bytes.
+max_response_body_size = 52428800
+
+# Mining configuration
+[mining]
+
+# Address for receiving miner subsidy and tx fees.
+#
+# Used in coinbase tx constructed in `getblocktemplate` RPC.
+# miner_address = 't1T92bmyoPM7PTSWUnaWnLGcxkF6Jp1AwMY'
+
+# Optional tag that Zebra appends to the coinbase input of every block it builds, after the
+# Zebra `🦓` marker and a `: ` separator.
+#
+# Limited to `MAX_USER_COINBASE_DATA_LEN` bytes.
+# extra_coinbase_data = 'my mining pool'
+
+# Optional shielded memo that Zebra will include in the output of a shielded coinbase
+# transaction. Limited to 512 bytes.
+#
+# Applies only if [`Self::miner_address`] contains a shielded component.
+# miner_memo = 'Mined by Zebra'
+
+# Mine blocks using Zebra's internal miner, without an external mining pool or equihash solver.
+#
+# This experimental feature is only supported on regtest as it uses null solutions and skips checking
+# for a valid Proof of Work.
+#
+# The internal miner is off by default.
+internal_miner = false
+
+# Health check HTTP server configuration.
+#
+# See the Zebra Book for details and examples:
+# <https://zebra.zfnd.org/user/health.html>
+[health]
+
+# Address to bind the health server to.
+#
+# The server is disabled when this is `None`.
+# listen_addr = '127.0.0.1:8080'
+
+# Minimum number of recently live peers to consider the node healthy.
+#
+# Used by `/healthy`.
+min_connected_peers = 1
+
+# Maximum allowed estimated blocks behind the network tip for readiness.
+#
+# Used by `/ready`. Negative estimates are treated as 0.
+ready_max_blocks_behind = 2
+
+# Enforce readiness checks on test networks.
+#
+# If `false`, `/ready` always returns 200 on regtest and testnets.
+enforce_on_test_networks = false
+
+# Maximum age of the last committed block before readiness fails.
+ready_max_tip_age = "5m"
+
+# zcashd-compat mode configuration.
+[zcashd_compat]
+
+# Enables zcashd-compat mode.
+#
+# zcashd-compat mode supervises or validates a P2P sidecar `zcashd` process
+# that syncs chain data from Zebra over the legacy Zcash P2P protocol.
+enabled = false
+
+# Whether Zebra should spawn and supervise a `zcashd -zebra-compat` child process.
+#
+# Set this to `false` if `zcashd` is managed externally.
+manage_zcashd = false
+
+# Preferred source for the `zcashd` binary.
+#
+# If `zcashd_path` is set, that explicit local path overrides this value.
+zcashd_source = "path"
+
+# Optional explicit path to a local `zcashd` binary with zcashd-compat support.
+#
+# When set, Zebra uses this path directly and skips embedded downloads.
+# zcashd_path = '/usr/local/bin/zcashd'
+
+# Optional `zcashd` datadir path.
+#
+# If unset, Zebra uses a subdirectory in `state.cache_dir`.
+# zcashd_datadir = '/var/lib/zcashd'
+
+# Extra command-line arguments passed to `zcashd`.
+#
+# This can be provided as:
+# - a TOML array: `zcashd_extra_args = ["-debug=1"]`
+# - a JSON array string (useful for environment variable overrides):
+# `ZEBRA_ZCASHD_COMPAT__ZCASHD_EXTRA_ARGS='["-conf=/path/to/zcash.conf","-debug=1"]'`
+#
+# Zebra passes these arguments through unchanged. For first-start bootstrap,
+# Zebra only infers path overrides from the first valid `-conf=/path` or
+# `-datadir=/path` form, and logs warnings for paired, empty, or duplicate
+# path options.
+#
+# Supervised zcashd runs always include `-printtoconsole` automatically.
+zcashd_extra_args = []
+
+# The Zebra legacy P2P address supervised zcashd connects to via `-connect`.
+#
+# If unset, Zebra derives it from its own bound legacy P2P listener
+# (`network.listen_addr`), substituting `127.0.0.1` when the listener is
+# bound to an unspecified address. Set this only when zcashd must reach
+# Zebra through a different address, such as across containers.
+# p2p_connect_addr = '127.0.0.1:8233'
+
+# Inbound sidecar peer IPs that must always receive block inventory broadcasts.
+#
+# If empty while zcashd-compat is enabled, Zebra defaults this list to
+# loopback addresses. This setting is rejected when zcashd-compat is
+# disabled.
+#
+# # Security
+#
+# This is a trusted-peer privilege boundary, not just a gossip list.
+# Inbound peers connecting from these IPs also:
+# - use a reserved inbound connection pool of one slot per listed IP
+# (shared across the list, without per-IP accounting), reducing the
+# public inbound pool by the same amount; when the reserved pool is
+# full, further connections from listed IPs compete for public slots
+# like any other peer,
+# - bypass the recent-IP reconnection rate limit while a reserved slot
+# is free (fallback connections are rate limited normally), and
+# - are exempt from the `FindBlocks`/`FindHeaders` sync stall detector.
+#
+# Only list addresses where every process is trusted, like the loopback
+# addresses of a host that runs nothing but Zebra and its sidecar.
+# Never list IPs that untrusted machines can connect from.
+#
+# Because environment values cannot express TOML arrays, this also accepts
+# a JSON array string, e.g.
+# `ZEBRA_ZCASHD_COMPAT__BLOCK_GOSSIP_PEER_IPS='["10.0.0.5"]'`.
+block_gossip_peer_ips = []
+
+# Delay before the first `zcashd` spawn attempt.
+startup_delay = "1s"
+
+# Delay between supervisor restart attempts.
+#
+# This is the base delay for exponential restart backoff.
+restart_backoff = "2s"
+
+# Maximum delay between supervisor restart attempts.
+#
+# This caps exponential restart backoff while retries continue indefinitely.
+restart_backoff_max = "5m"
+
+# Child uptime that resets the supervisor's consecutive restart count.
+restart_reset_after = "1h"
+
+# Grace period for a clean shutdown after sending SIGTERM.
+shutdown_grace_period = "5m"
+
