@@ -1,0 +1,4 @@
+project: zebrad
+kind: Changed
+body: 'Changed `zebrad generate` to list every config option with its documentation. Options that are unset by default are commented out, with an example value.'
+time: 2026-11-16T15:21:48.000000000+00:00

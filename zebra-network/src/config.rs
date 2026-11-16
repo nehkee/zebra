@@ -70,7 +70,7 @@ const DEFAULT_TESTNET_PEERS: [&str; 3] = [
 ];
 
 /// Configuration for networking code.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, documented::DocumentedFields)]
 #[serde(deny_unknown_fields, default, into = "DConfig")]
 pub struct Config {
     /// The address on which this node should listen for connections.

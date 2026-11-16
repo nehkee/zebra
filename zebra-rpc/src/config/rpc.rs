@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use zebra_chain::common::default_cache_dir;
 
 /// RPC configuration section.
-#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize, documented::DocumentedFields)]
 #[serde(deny_unknown_fields, default)]
 pub struct Config {
     /// IP address and port for the RPC server.

@@ -1,0 +1,4 @@
+project: zebra-consensus
+kind: Added
+body: 'Added `documented::DocumentedFields` implementations to the config types, so their field docs are available at runtime.'
+time: 2026-11-16T15:21:48.000000000+00:00

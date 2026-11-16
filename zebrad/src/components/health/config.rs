@@ -3,7 +3,7 @@ use std::{net::SocketAddr, time::Duration};
 use serde::{Deserialize, Serialize};
 
 /// Health server configuration.
-#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize, documented::DocumentedFields)]
 #[serde(deny_unknown_fields, default)]
 pub struct Config {
     /// Address to bind the health server to.

@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 /// Configuration for parallel semantic verification:
 /// <https://zebra.zfnd.org/dev/rfcs/0002-parallel-verification.html#definitions>
-#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize, documented::DocumentedFields)]
 #[serde(
     deny_unknown_fields,
     default,
