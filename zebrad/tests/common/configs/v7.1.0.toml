@@ -660,7 +660,7 @@ parallel_cpu_threads = 0
 debug_force_finished_sync = false
 
 # The directory where Zebra stores RPC cookies.
-cookie_dir = "/root/.cache/zebra"
+cookie_dir = "cache_dir"
 
 # Enable cookie-based authentication for RPCs.
 enable_cookie_auth = true
